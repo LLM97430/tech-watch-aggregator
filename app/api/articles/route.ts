@@ -4,8 +4,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
    try{
       // Aller chercher une liste d'articles sur l'API externe
-      const username = "le_maonluc_76311b2c3c1e9";
-      const response = await fetch(`https://dev.to/api/articles?username=${username}`);
+      const response = await fetch(`https://dev.to/api/articles?tag=javascript&per_page=10`);
       if (!response.ok) {
          throw new Error(`Erreur HTTP: ${response.status}`);
       }
