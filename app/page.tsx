@@ -1,69 +1,79 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from "react";
 
 export default function Home() {
+
+  // 1. Définition des trois états
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 2. Appel à notre propre route API lors du chargement de la page
+  useEffect(() => {
+    async function fetchArticles() {
+      try {
+        const response = await fetch('/api/articles');
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des données');
+        }
+
+        const data = await response.json();
+        setArticles(data);
+      } catch(err) {
+        setError(err.message);
+      } finally {
+        // Terminer le chargement 
+        setLoading(false);
+      }
+    }
+
+    fetchArticles();
+  }, [  ]); //Tableau vide pour l'exécution en une seule fois à l'ouverture de la page
+
+  // 3. Affichage conditionnelle (du chargement ou de l'erreur)
+  if(loading) {
+    return <p style={{padding: '2rem'}}>Chargement de la veille tech...</p>;
+  }
+
+  if (error) {
+    return <p style={{padding: '2rem', color:'red'}}>Erreur: {error}</p>;
+  }
+
+  // 4. Affichage de la liste des articles
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main style={{maxWidth: '800px', margin:'0 auto', padding:'2rem', fontFamily:'sans-serif'}}>
+      <h1>Ma veille Tech</h1>
+
+      {articles.length === 0 ? (
+        <p>Aucun article trouvé pour le moment.</p>
+      ) : (
+        <div style={{display:'flex', flexDirection:'column', gap:'1rem', marginTop:'1.5rem'}}>
+          {articles.map((article) => (
+            <article 
+            key = {article.id}
+            style = {{border: '1px solid #ddd', padding:'1rem', borderRadius:'8px'}}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              <h2>
+                <a href={article.url} target="_blank" rel = "noopener noreferrer">
+                  {article.title}
+                </a>
+              </h2>
+              <p style={{color: '#666', fontSize:'0.9rem'}}>
+                Par {article.user.name} • Publié le {new Date(article.published_at).toLocaleDateString('fr-FR')}
+              </p>
+              <div style={{display:'flex', gap:'0.5rem', marginTop:'0.5rem'}}>
+                {article.tag_list.map((tag) => (
+                  <span key={tag} style={{background:'#f0f0f0', color:'black', padding:'0.2rem 0.5rem', borderRadius:'4px', fontSize:'0.8rem'}}>
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div> 
+      )}
+    </main>
   );
 }
